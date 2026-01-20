@@ -41,41 +41,73 @@ A estrutura do código é organizada em "vertical slices", onde cada funcionalid
 Organização de Pastas
 
 `
-VerticalSliceTodoList/
-├── Features/
-│   ├── CreateTodo/
+VerticalSliceTodoList
+
+├── Features
+
+│   ├── CreateTodo
+
 │   │   ├── CreateTodoCommand.cs
+
 │   │   ├── CreateTodoCommandHandler.cs
+
 │   │   ├── CreateTodoValidator.cs
+
 │   │   └── CreateTodoResponse.cs
-│   ├── GetTodos/
+
+│   ├── GetTodos
+
 │   │   ├── GetTodosQuery.cs
+
 │   │   ├── GetTodosQueryHandler.cs
+
 │   │   └── GetTodosResponse.cs
-│   ├── UpdateTodo/
+
+│   ├── UpdateTodo
+
 │   │   ├── UpdateTodoCommand.cs
+
 │   │   ├── UpdateTodoCommandHandler.cs
+
 │   │   └── UpdateTodoValidator.cs
-│   ├── DeleteTodo/
+
+│   ├── DeleteTodo
+
 │   │   ├── DeleteTodoCommand.cs
+
 │   │   └── DeleteTodoCommandHandler.cs
-│   └── CompleteTodo/
+
+│   └── CompleteTodo
+
 │       ├── CompleteTodoCommand.cs
+
 │       └── CompleteTodoCommandHandler.cs
-├── Domain/
-│   ├── Entities/
+
+├── Domain
+
+│   ├── Entities
+
 │   │   └── Todo.cs
-│   └── ValueObjects/
-├── Infrastructure/
-│   ├── Data/
+
+│   └── ValueObjects
+
+├── Infrastructure
+
+│   ├── Data
+
 │   │   ├── TodoDbContext.cs
-│   │   └── Migrations/
-│   └── Repositories/
-├── Controllers/
+
+│   │   └── Migrations
+
+│   └── Repositories
+
+├── Controllers
+
 │   └── TodoController.cs
+
 ├── Program.cs
+
 └── appsettings.json
-`
 
 #Componentes de Cada Slice
 
