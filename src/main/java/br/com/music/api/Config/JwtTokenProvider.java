@@ -15,8 +15,11 @@ public class JwtTokenProvider {
     @Value("${jwt.secret:mySecretKeyForJWTTokenGenerationAndValidationPurposesOnly12345678}")
     private String jwtSecret;
 
-    @Value("${jwt.expiration:86400000}") // Default: 24 hours
+    @Value("${jwt.expiration:300000}") // Default: 5 minutes
     private long jwtExpirationMs;
+
+    @Value("${jwt.refresh.expiration:604800000}") // Default: 7 days
+    private long jwtRefreshExpirationMs;
 
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();
@@ -43,6 +46,37 @@ public class JwtTokenProvider {
                 .subject(username)
                 .issuedAt(now)
                 .expiration(expiryDate)
+                .signWith(key)
+                .compact();
+    }
+
+    public String generateRefreshToken(Authentication authentication) {
+        String username = authentication.getName();
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtRefreshExpirationMs);
+
+        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+
+        return Jwts.builder()
+                .subject(username)
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .claim("type", "refresh")
+                .signWith(key)
+                .compact();
+    }
+
+    public String generateRefreshTokenFromUsername(String username) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + jwtRefreshExpirationMs);
+
+        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+
+        return Jwts.builder()
+                .subject(username)
+                .issuedAt(now)
+                .expiration(expiryDate)
+                .claim("type", "refresh")
                 .signWith(key)
                 .compact();
     }

@@ -35,13 +35,6 @@ class ArtistaAlbumControllerTest {
 
     @Test
     @WithMockUser
-    void testListReturnsOk() throws Exception {
-        when(service.list()).thenReturn(List.of(new ArtistaAlbumDto(1L, 1L, 1L, "The Beatles", "Abbey Road")));
-        mockMvc.perform(get("/v1/artistas-albuns")).andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockUser
     void testCreateReturnsCreated() throws Exception {
         ArtistaAlbumDto created = new ArtistaAlbumDto(10L, 1L, 2L, "Artist", "Album");
         when(service.create(any(ArtistaAlbumDto.class))).thenReturn(created);

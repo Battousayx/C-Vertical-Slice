@@ -1,11 +1,14 @@
 # Guia de Autenticação JWT - Music API
 
 ## Visão Geral
-A Music API foi criada para usar **autenticação JWT (JSON Web Token)** ao invés de HTTP Basic Auth. Este documento explica o funnciona fluxo de autenticação e como testá-lo.
+A Music API foi criada para usar **autenticação JWT (JSON Web Token)** ao invés de HTTP Basic Auth. Este documento explica o fluxo de autenticação e como testá-lo.
 
 ---
 - **Autenticação baseada em Token JWT**
-- Endpoint de login para obter tokens
+- **Access Token** com expiração de 5 minutos
+- **Refresh Token** com expiração de 7 dias para renovação
+- Endpoint de login para obter tokens de acesso e atualização
+- Endpoint de refresh para renovar tokens expirados
 - Endpoints da API protegidos que requerem tokens JWT válidos
 - Swagger UI acessível com ou sem tokens
 - Usuário admin padrão criado automaticamente
@@ -35,34 +38,58 @@ CREATE TABLE users (
 
 ## Fluxo de Autenticação
 
-### 1. Login (Obter Token JWT)
+### 1. Login (Obter Access e Refresh Tokens)
 ```
 POST /api/v1/auth/login
 Content-Type: application/json
 
 {
   "username": "admin",
-  "password": "admin"
+  "password": "admin123"
 }
 
 Resposta (HTTP 200):
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "tokenType": "Bearer",
-  "username": "admin"
+  "username": "admin",
+  "expiresIn": 300
 }
 ```
 
-### 2. Usar Token para Acessar Endpoints Protegidos
-Inclua o token no cabeçalho `Authorization`:
+### 2. Usar Access Token para Acessar Endpoints Protegidos
+Inclua o access token no cabeçalho `Authorization`:
 ```
 GET /api/v1/artistas
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-### 3. Validação de Token
-- Tokens expiram após **24 horas** (configurável via `jwt.expiration`)
+### 3. Renovar Token Expirado (Refresh)
+Quando o access token expirar (após 5 minutos), use o refresh token:
+```
+POST /api/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+
+Resposta (HTTP 200):
+{
+  "accessToken": "novo_token_de_acesso...",
+  "refreshToken": "novo_refresh_token...",
+  "tokenType": "Bearer",
+  "username": "admin",
+  "expiresIn": 300
+}
+```
+
+### 4. Validação de Token
+- **Access Tokens** expiram após **5 minutos** (300000ms)
+- **Refresh Tokens** expiram após **7 dias** (604800000ms)
 - Tokens inválidos/expirados retornam **401 Unauthorized**
+- Use o refresh token para obter novos access tokens sem fazer login novamente
 
 ---
 
@@ -103,8 +130,9 @@ http://localhost:8080/api/login
 ## Endpoints Públicos (Sem Autenticação Necessária)
 
 - `/login` — Página de login
-- `/v1/auth/login` — Obter token JWT
+- `/v1/auth/login` — Obter access e refresh tokens
 - `/v1/auth/register` — Registrar novo usuário
+- `/v1/auth/refresh` — Renovar access token usando refresh token
 - `/swagger-ui/**` — Swagger UI
 - `/v3/api-docs/**` — Documentação OpenAPI
 - `/swagger-resources/**` — Recursos Swagger
@@ -131,17 +159,20 @@ Localizadas em `src/main/resources/application.properties`:
 ```properties
 # Configuração JWT
 jwt.secret=mySecretKeyForJWTTokenGenerationAndValidationPurposesOnly12345678
-jwt.expiration=86400000  # 24 horas em milissegundos
+jwt.expiration=300000  # 5 minutos em milissegundos
+jwt.refresh.expiration=604800000  # 7 dias em milissegundos
 
 # Variáveis de ambiente (sobrescrevem os padrões):
 # JWT_SECRET=sua-chave-secreta
-# JWT_EXPIRATION=86400000
+# JWT_EXPIRATION=300000
+# JWT_REFRESH_EXPIRATION=604800000
 ```
 
 **Importante para Produção:**
 - Altere `jwt.secret` para uma string longa e aleatória
 - Use variáveis de ambiente para definir secrets de forma segura
-- Aumente `jwt.expiration` se necessário (em milissegundos)
+- Ajuste `jwt.expiration` conforme necessário (5-15 minutos recomendado)
+- Ajuste `jwt.refresh.expiration` conforme política de segurança (7-30 dias)
 
 ---
 
@@ -171,7 +202,8 @@ jwt.expiration=86400000  # 24 horas em milissegundos
 | Arquivo | Propósito |
 |------|---------|
 | `Controller/dto/LoginRequest.java` | Payload de requisição de login |
-| `Controller/dto/JwtAuthResponse.java` | Payload de resposta JWT |
+| `Controller/dto/JwtAuthResponse.java` | Payload de resposta JWT com access e refresh tokens |
+| `Controller/dto/RefreshTokenRequest.java` | Payload de requisição de renovação de token |
 
 ### Migrações de Banco de Dados
 | Arquivo | Propósito |
@@ -194,6 +226,13 @@ curl -X POST http://localhost:8080/api/v1/auth/login \
 curl -X POST http://localhost:8080/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"novousuario","password":"senha123"}'
+```
+
+### Renovar Access Token
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refreshToken":"seu-refresh-token-aqui"}'
 ```
 
 ### Acessar Endpoint Protegido com Token

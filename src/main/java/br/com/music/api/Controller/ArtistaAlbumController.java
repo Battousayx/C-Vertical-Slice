@@ -31,8 +31,10 @@ public class ArtistaAlbumController {
     @Operation(summary = "Listar todas as associações artista-álbum", description = "Recupera uma lista de todas as associações entre artistas e álbuns no sistema")
     @ApiResponse(responseCode = "200", description = "Lista de associações recuperada com sucesso", 
         content = @Content(mediaType = "application/json", schema = @Schema(implementation = ArtistaAlbumDto.class)))
-    public List<ArtistaAlbumDto> list() {
-        return service.list();
+    public List<ArtistaAlbumDto> list(
+            @Parameter(description = "Ordem de classificação (asc ou desc)", schema = @Schema(allowableValues = {"asc", "desc"}))
+            @RequestParam(defaultValue = "asc") String order) {
+        return service.list(order);
     }
 
     @GetMapping("/{id}")

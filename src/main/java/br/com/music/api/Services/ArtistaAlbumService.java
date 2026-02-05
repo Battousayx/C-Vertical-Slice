@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,8 +23,11 @@ public class ArtistaAlbumService {
         this.mapper = mapper;
     }
 
-    public List<ArtistaAlbumDto> list() {
-        return repository.findAll().stream().map(mapper::toDto).collect(Collectors.toList());
+    public List<ArtistaAlbumDto> list(String order) {
+        Sort sort = "desc".equalsIgnoreCase(order) 
+            ? Sort.by("id").descending() 
+            : Sort.by("id").ascending();
+        return repository.findAll(sort).stream().map(mapper::toDto).collect(Collectors.toList());
     }
 
     public Optional<ArtistaAlbumDto> get(Long id) {
