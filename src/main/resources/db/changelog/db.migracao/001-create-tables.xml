@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+          http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- ===================== -->
+    <!-- ARTISTA -->
+    <!-- ===================== -->
+    <changeSet id="001-artista" author="herbet">
+        <sql>
+            CREATE TABLE artista (
+                id BIGSERIAL PRIMARY KEY,
+                nome VARCHAR(200) NOT NULL,
+                tipo VARCHAR(20) NOT NULL,
+                ativo BOOLEAN NOT NULL DEFAULT TRUE
+            );
+        </sql>
+    </changeSet>
+
+    <!-- ===================== -->
+    <!-- ALBUM -->
+    <!-- ===================== -->
+    <changeSet id="002-album" author="herbet">
+        <sql>
+            CREATE TABLE album (
+                id BIGSERIAL PRIMARY KEY,
+                titulo VARCHAR(200) NOT NULL,
+                data_lancamento DATE NOT NULL,
+                ativo BOOLEAN NOT NULL DEFAULT TRUE
+            );
+        </sql>
+    </changeSet>
+
+    <!-- ===================== -->
+    <!-- ARTISTA_ALBUM (N:N) -->
+    <!-- ===================== -->
+    <changeSet id="003-artista-album" author="herbet">
+        <sql>
+            CREATE TABLE artista_album (
+                id BIGSERIAL PRIMARY KEY,
+                artista_id BIGINT NOT NULL,
+                album_id BIGINT NOT NULL,
+                CONSTRAINT uk_artista_album UNIQUE (artista_id, album_id),
+                CONSTRAINT fk_artista_album_artista
+                    FOREIGN KEY (artista_id) REFERENCES artista (id),
+                CONSTRAINT fk_artista_album_album
+                    FOREIGN KEY (album_id) REFERENCES album (id)
+            );
+        </sql>
+    </changeSet>
+
+    <!-- ===================== -->
+    <!-- ALBUM_IMAGEM -->
+    <!-- ===================== -->
+    <changeSet id="004-album-imagem" author="herbet">
+        <sql>
+            CREATE TABLE album_imagem (
+                id BIGSERIAL PRIMARY KEY,
+                bucket VARCHAR(100) NOT NULL,
+                object_key VARCHAR(255) NOT NULL,
+                content_type VARCHAR(100) NOT NULL,
+                tamanho BIGINT NOT NULL,
+                album_id BIGINT NOT NULL,
+                CONSTRAINT fk_album_imagem_album
+                    FOREIGN KEY (album_id) REFERENCES album (id)
+            );
+        </sql>
+    </changeSet>
+
+    <!-- ===================== -->
+    <!-- REGIONAL -->
+    <!-- ===================== -->
+    <changeSet id="005-regional" author="herbet">
+        <sql>
+            CREATE TABLE regional (
+                id INT PRIMARY KEY,
+                nome VARCHAR(200) NOT NULL,
+                ativo BOOLEAN NOT NULL DEFAULT TRUE
+            );
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

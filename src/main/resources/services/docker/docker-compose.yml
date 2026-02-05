@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # minio:
+  #   image: docker.io/bitnami/minio:2022
+  #   container_name: minIO
+  #   ports:
+  #     - '9000:9000'
+  #     - '9001:9001'
+  #   networks:
+  #     - minionetwork
+  #   volumes:
+  #     - minio_data:/data
+  #   environment:
+  #     - MINIO_ROOT_USER=admin
+  #     - MINIO_ROOT_PASSWORD=adminadminadmin
+  #     - MINIO_DEFAULT_BUCKETS=image-usuario
+
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: padawan_api
+    ports:
+      - "5432:5432"
+    networks:
+      - minionetwork
+    # 🔥 SEM volume
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - 6379:6379
+    networks:
+      - minionetwork
+
+networks:
+  minionetwork:
+    driver: bridge
+
+volumes:
+  minio_data:
+    driver: local
