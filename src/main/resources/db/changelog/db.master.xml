@@ -8,5 +8,11 @@
 
     <!-- DDL inicial -->
     <include file="/db/changelog/db.migracao/001-create-tables.xml"/>
+    
+    <!-- Users table for JWT authentication -->
+    <include file="/db/changelog/db.migracao/002-create-users-table.xml"/>
+    
+    <!-- Update admin password -->
+    <include file="/db/changelog/db.migracao/003-update-admin-password.xml"/>
 
 </databaseChangeLog>

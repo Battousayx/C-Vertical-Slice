@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music API - Acesso</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .logo p {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .form-group button:hover {
+            transform: translateY(-2px);
+        }
+
+        .form-group button:active {
+            transform: translateY(0);
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .success {
+            color: #27ae60;
+            font-size: 13px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .token-display {
+            margin-top: 30px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .token-display h3 {
+            color: #27ae60;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .token-value {
+            background: white;
+            padding: 10px;
+            border-radius: 3px;
+            word-break: break-all;
+            font-size: 12px;
+            color: #333;
+            font-family: monospace;
+            border: 1px solid #ddd;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+        }
+
+        .swagger-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .swagger-link a {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .swagger-link a:hover {
+            background: #764ba2;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🎵 Music API</h1>
+            <p>Autentique-se para acessar a API e os endpoints do Swagger</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Nome de usuário</label>
+                <input type="text" id="username" name="username" placeholder="Digite o nome de usuário" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" name="password" placeholder="Digite a senha" required>
+            </div>
+
+            <div class="error" id="error"></div>
+            <div class="success" id="success"></div>
+
+            <div class="form-group">
+                <button type="submit" id="loginBtn">Entrar</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+            </div>
+        </form>
+
+        <div class="register-link">
+            Não tem uma conta? <a onclick="toggleRegister()">Registre-se aqui</a>
+        </div>
+
+        <div class="token-display" id="tokenDisplay">
+            <h3>✓ Login bem-sucedido!</h3>
+            <p style="margin-bottom: 10px; font-size: 13px; color: #666;">Seu token JWT:</p>
+            <div class="token-value" id="tokenValue"></div>
+            <button class="copy-btn" onclick="copyToClipboard()">Copiar Token</button>
+            <button class="copy-btn" onclick="logout()" style="background: #e74c3c; margin-top: 5px;">Sair</button>
+            <div class="swagger-link">
+                <p style="margin-bottom: 10px; font-size: 13px; color: #666; margin-top: 15px;">
+                    Use este token na Autorização do Swagger:
+                </p>
+                <a href="/api/swagger-ui.html" target="_blank">Ir para Swagger UI</a>
+                <p style="margin-top: 10px; font-size: 12px; color: #999;">
+                    Clique no botão "Autorizar" e cole: <code>Bearer {token}</code>
+                </p>
+            </div>
+        </div>
+
+        <form id="registerForm" style="display: none;">
+            <h2 style="color: #667eea; margin-bottom: 20px; font-size: 20px;">Criar Conta</h2>
+
+            <div class="form-group">
+                <label for="reg-username">Nome de usuário</label>
+                <input type="text" id="reg-username" name="username" placeholder="Escolha um nome de usuário" required>
+            </div>
+
+            <div class="form-group">
+                <label for="reg-password">Senha</label>
+                <input type="password" id="reg-password" name="password" placeholder="Escolha uma senha" required>
+            </div>
+
+            <div class="error" id="reg-error"></div>
+            <div class="success" id="reg-success"></div>
+
+            <div class="form-group">
+                <button type="submit" id="registerBtn">Criar Conta</button>
+            </div>
+
+            <div class="loading" id="reg-loading">
+                <div class="spinner"></div>
+            </div>
+        </form>
+
+        <div class="register-link" id="backToLogin" style="display: none;">
+            <a onclick="toggleRegister()">Voltar para Login</a>
+        </div>
+    </div>
+
+    <script>
+        let currentToken = null;
+
+        function toggleRegister() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const backBtn = document.getElementById('backToLogin');
+            const registerLink = document.querySelector('.register-link:not(#backToLogin)');
+
+            loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
+            registerForm.style.display = registerForm.style.display === 'none' ? 'block' : 'none';
+            backBtn.style.display = backBtn.style.display === 'none' ? 'block' : 'none';
+            registerLink.style.display = registerLink.style.display === 'none' ? 'none' : 'block';
+
+            document.getElementById('tokenDisplay').style.display = 'none';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('error');
+            const loading = document.getElementById('loading');
+            const loginBtn = document.getElementById('loginBtn');
+
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            loading.style.display = 'block';
+            loginBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentToken = data.accessToken;
+                    document.getElementById('tokenValue').textContent = data.accessToken;
+                    document.getElementById('tokenDisplay').style.display = 'block';
+                    document.getElementById('loginForm').style.display = 'none';
+                    document.querySelector('.register-link:not(#backToLogin)').style.display = 'none';
+                } else {
+                    const error = await response.text();
+                    errorDiv.textContent = error || 'Falha no login. Verifique suas credenciais.';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Erro ao conectar ao servidor: ' + error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                loginBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+            const errorDiv = document.getElementById('reg-error');
+            const successDiv = document.getElementById('reg-success');
+            const loading = document.getElementById('reg-loading');
+            const registerBtn = document.getElementById('registerBtn');
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            successDiv.textContent = '';
+            loading.style.display = 'block';
+            registerBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    successDiv.textContent = 'Conta criada com sucesso! Redirecionando para login...';
+                    successDiv.style.display = 'block';
+                    setTimeout(() => toggleRegister(), 2000);
+                } else {
+                    const error = await response.text();
+                    errorDiv.textContent = error || 'Falha no registro. Tente novamente.';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = 'Erro ao conectar ao servidor: ' + error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                loading.style.display = 'none';
+                registerBtn.disabled = false;
+            }
+        });
+
+        function copyToClipboard() {
+            if (currentToken) {
+                navigator.clipboard.writeText(currentToken).then(() => {
+                    const btn = event.target;
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copiado!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                });
+            }
+        }
+
+        // Check if user is already authenticated (has token in URL or localStorage)
+        window.addEventListener('load', () => {
+            const savedToken = localStorage.getItem('jwtToken');
+            if (savedToken) {
+                currentToken = savedToken;
+                document.getElementById('tokenValue').textContent = savedToken;
+                document.getElementById('tokenDisplay').style.display = 'block';
+                document.getElementById('loginForm').style.display = 'none';
+                document.querySelector('.register-link:not(#backToLogin)').style.display = 'none';
+            }
+        });
+
+        // Store token in localStorage when obtained
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            return originalFetch.apply(this, args).then(response => {
+                if (args[0] === '/api/v1/auth/login' && response.ok) {
+                    response.clone().json().then(data => {
+                        if (data.accessToken) {
+                            localStorage.setItem('jwtToken', data.accessToken);
+                        }
+                    });
+                }
+                return response;
+            });
+        };
+
+        function logout() {
+            const token = currentToken || localStorage.getItem('jwtToken');
+            
+            // Call logout endpoint with token
+            fetch('/api/v1/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + (token || ''),
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                // Clear local storage and UI
+                localStorage.removeItem('jwtToken');
+                currentToken = null;
+                
+                // Reset UI
+                document.getElementById('tokenDisplay').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+                document.querySelector('.register-link:not(#backToLogin)').style.display = 'block';
+                
+                // Clear input fields
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+                document.getElementById('error').style.display = 'none';
+                
+                alert('Desconectado com sucesso');
+            }).catch(error => {
+                console.error('Logout error:', error);
+                // Still clear local storage even if logout endpoint fails
+                localStorage.removeItem('jwtToken');
+                currentToken = null;
+                alert('Desconectado (lado do cliente)');
+                
+                // Reset UI
+                document.getElementById('tokenDisplay').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+                document.querySelector('.register-link:not(#backToLogin)').style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html>
