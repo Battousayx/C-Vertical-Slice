@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+          http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- ===================== -->
+    <!-- INSERT SAMPLE ARTISTS -->
+    <!-- ===================== -->
+    <changeSet id="009-insert-sample-artists" author="herbet">
+        <sql>
+            INSERT INTO artista (nome, tipo, ativo) VALUES
+            ('Queen', 'BANDA', true),
+            ('Michael Jackson', 'CANTOR', true),
+            ('The Beatles', 'BANDA', true),
+            ('Beyoncé', 'CANTOR', true),
+            ('Pink Floyd', 'BANDA', true),
+            ('Adele', 'CANTOR', true)
+            ON CONFLICT DO NOTHING;
+        </sql>
+    </changeSet>
+
+    <!-- ===================== -->
+    <!-- INSERT SAMPLE ALBUMS  -->
+    <!-- ===================== -->
+    <changeSet id="010-insert-sample-albums" author="herbet">
+        <sql>
+            INSERT INTO album (titulo, data_lancamento, ativo) VALUES
+            ('A Night at the Opera', '1975-11-21', true),
+            ('Thriller', '1982-11-30', true),
+            ('Abbey Road', '1969-09-26', true),
+            ('Lemonade', '2016-04-23', true),
+            ('The Dark Side of the Moon', '1973-03-01', true),
+            ('21', '2011-01-24', true)
+            ON CONFLICT DO NOTHING;
+        </sql>
+    </changeSet>
+
+    <!-- ===================== -->
+    <!-- LINK ARTISTS TO ALBUMS -->
+    <!-- ===================== -->
+    <changeSet id="011-insert-artista-album-relationships" author="herbet">
+        <sql>
+            INSERT INTO artista_album (artista_id, album_id)
+            SELECT a.id, al.id FROM artista a, album al
+            WHERE a.nome = 'Queen' AND al.titulo = 'A Night at the Opera'
+            ON CONFLICT DO NOTHING;
+
+            INSERT INTO artista_album (artista_id, album_id)
+            SELECT a.id, al.id FROM artista a, album al
+            WHERE a.nome = 'Michael Jackson' AND al.titulo = 'Thriller'
+            ON CONFLICT DO NOTHING;
+
+            INSERT INTO artista_album (artista_id, album_id)
+            SELECT a.id, al.id FROM artista a, album al
+            WHERE a.nome = 'The Beatles' AND al.titulo = 'Abbey Road'
+            ON CONFLICT DO NOTHING;
+
+            INSERT INTO artista_album (artista_id, album_id)
+            SELECT a.id, al.id FROM artista a, album al
+            WHERE a.nome = 'Beyoncé' AND al.titulo = 'Lemonade'
+            ON CONFLICT DO NOTHING;
+
+            INSERT INTO artista_album (artista_id, album_id)
+            SELECT a.id, al.id FROM artista a, album al
+            WHERE a.nome = 'Pink Floyd' AND al.titulo = 'The Dark Side of the Moon'
+            ON CONFLICT DO NOTHING;
+
+            INSERT INTO artista_album (artista_id, album_id)
+            SELECT a.id, al.id FROM artista a, album al
+            WHERE a.nome = 'Adele' AND al.titulo = '21'
+            ON CONFLICT DO NOTHING;
+        </sql>
+    </changeSet>
+
+    <!-- ===================== -->
+    <!-- INSERT ALBUM IMAGES   -->
+    <!-- ===================== -->
+    <changeSet id="012-insert-album-images" author="herbet">
+        <sql>
+            -- A Night at the Opera cover
+            INSERT INTO album_imagem (bucket, object_key, content_type, tamanho, album_id)
+            SELECT 'meu-bucket', 'albums/queen-night-opera-cover.jpg', 'image/jpeg', 2048576, al.id
+            FROM album al WHERE al.titulo = 'A Night at the Opera'
+            ON CONFLICT DO NOTHING;
+
+            -- Thriller cover
+            INSERT INTO album_imagem (bucket, object_key, content_type, tamanho, album_id)
+            SELECT 'meu-bucket', 'albums/mj-thriller-cover.jpg', 'image/jpeg', 1856432, al.id
+            FROM album al WHERE al.titulo = 'Thriller'
+            ON CONFLICT DO NOTHING;
+
+            -- Abbey Road cover
+            INSERT INTO album_imagem (bucket, object_key, content_type, tamanho, album_id)
+            SELECT 'meu-bucket', 'albums/beatles-abbey-road-cover.jpg', 'image/jpeg', 2234567, al.id
+            FROM album al WHERE al.titulo = 'Abbey Road'
+            ON CONFLICT DO NOTHING;
+
+            -- Lemonade cover
+            INSERT INTO album_imagem (bucket, object_key, content_type, tamanho, album_id)
+            SELECT 'meu-bucket', 'albums/beyonce-lemonade-cover.jpg', 'image/jpeg', 1987654, al.id
+            FROM album al WHERE al.titulo = 'Lemonade'
+            ON CONFLICT DO NOTHING;
+
+            -- The Dark Side of the Moon cover
+            INSERT INTO album_imagem (bucket, object_key, content_type, tamanho, album_id)
+            SELECT 'meu-bucket', 'albums/pink-floyd-dark-side-cover.jpg', 'image/jpeg', 2156789, al.id
+            FROM album al WHERE al.titulo = 'The Dark Side of the Moon'
+            ON CONFLICT DO NOTHING;
+
+            -- 21 cover
+            INSERT INTO album_imagem (bucket, object_key, content_type, tamanho, album_id)
+            SELECT 'meu-bucket', 'albums/adele-21-cover.jpg', 'image/jpeg', 1745632, al.id
+            FROM album al WHERE al.titulo = '21'
+            ON CONFLICT DO NOTHING;
+
+            -- Additional back cover for Thriller
+            INSERT INTO album_imagem (bucket, object_key, content_type, tamanho, album_id)
+            SELECT 'meu-bucket', 'albums/mj-thriller-back.jpg', 'image/jpeg', 1654321, al.id
+            FROM album al WHERE al.titulo = 'Thriller'
+            ON CONFLICT DO NOTHING;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

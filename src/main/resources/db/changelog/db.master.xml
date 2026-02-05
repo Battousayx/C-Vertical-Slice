@@ -14,5 +14,8 @@
     
     <!-- Update admin password -->
     <include file="/db/changelog/db.migracao/003-update-admin-password.xml"/>
+    
+    <!-- Insert sample data -->
+    <include file="/db/changelog/db.migracao/004-insert-sample-data.xml"/>
 
 </databaseChangeLog>

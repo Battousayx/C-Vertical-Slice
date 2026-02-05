@@ -26,7 +26,7 @@
     <changeSet id="007-insert-default-admin-user" author="herbet">
         <sql>
             INSERT INTO users (username, password, email, ativo, roles) 
-            VALUES ('admin', '$2b$10$slYQmyNdGzin7olVN9sNRuYWMoNpZ2TJMh1Nx4TTvf.RTNm3m3Dwq', 'admin@example.com', true, 'ADMIN')
+            VALUES ('admin', '$2a$10$tSgZHw2lu.dNDwZK3NEBtOjJxhyi6nbePVmAaG6vmYM6cwDtlDnnS', 'admin@example.com', true, 'ADMIN')
             ON CONFLICT (username) DO NOTHING;
         </sql>
     </changeSet>
