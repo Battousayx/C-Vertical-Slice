@@ -35,17 +35,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String username = tokenProvider.getUsernameFromToken(jwt);
+            if (StringUtils.hasText(jwt)) {
+                if (tokenProvider.validateToken(jwt)) {
+                    String username = tokenProvider.getUsernameFromToken(jwt);
 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        username, null, null);
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            username, null, null);
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    // Token is invalid or expired - redirect to login for browser requests
+                    if (isBrowserRequest(request)) {
+                        logger.warn("Token expired or invalid - redirecting to login page");
+                        response.sendRedirect(request.getContextPath() + "/login");
+                        return;
+                    } else {
+                        // For API requests, return 401 with JSON response
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"error\":\"Token expired or invalid\",\"message\":\"Please refresh your token or login again\"}");
+                        return;
+                    }
+                }
             }
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);
+            
+            // Redirect to login on authentication error for browser requests
+            if (isBrowserRequest(request)) {
+                response.sendRedirect(request.getContextPath() + "/login");
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);
@@ -59,6 +80,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                path.contains("/webjars") ||
                path.contains("/login") ||
                path.contains("/v1/auth");
+    }
+    
+    private boolean isBrowserRequest(HttpServletRequest request) {
+        String acceptHeader = request.getHeader("Accept");
+        return acceptHeader != null && acceptHeader.contains("text/html");
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {

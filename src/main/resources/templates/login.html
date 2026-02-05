@@ -294,6 +294,8 @@
 
     <script>
         let currentToken = null;
+        let currentRefreshToken = null;
+        let tokenExpirationTimer = null;
 
         function toggleRegister() {
             const loginForm = document.getElementById('loginForm');
@@ -307,6 +309,82 @@
             registerLink.style.display = registerLink.style.display === 'none' ? 'none' : 'block';
 
             document.getElementById('tokenDisplay').style.display = 'none';
+        }
+
+        function scheduleTokenExpiration(expiresInSeconds) {
+            // Clear any existing timer
+            if (tokenExpirationTimer) {
+                clearTimeout(tokenExpirationTimer);
+            }
+
+            // Schedule auto-refresh 30 seconds before expiration
+            const refreshTime = (expiresInSeconds - 30) * 1000;
+            if (refreshTime > 0) {
+                tokenExpirationTimer = setTimeout(() => {
+                    refreshAccessToken();
+                }, refreshTime);
+                console.log('Token will auto-refresh in', refreshTime / 1000, 'seconds');
+            }
+        }
+
+        async function refreshAccessToken() {
+            const refreshToken = currentRefreshToken || localStorage.getItem('jwtRefreshToken');
+            
+            if (!refreshToken) {
+                console.log('No refresh token available, redirecting to login');
+                handleTokenExpiration();
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/v1/auth/refresh', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ refreshToken: refreshToken })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentToken = data.accessToken;
+                    currentRefreshToken = data.refreshToken;
+                    
+                    localStorage.setItem('jwtToken', data.accessToken);
+                    localStorage.setItem('jwtRefreshToken', data.refreshToken);
+                    
+                    console.log('Token refreshed successfully');
+                    
+                    // Schedule next refresh
+                    if (data.expiresIn) {
+                        scheduleTokenExpiration(data.expiresIn);
+                    }
+                } else {
+                    console.log('Token refresh failed, redirecting to login');
+                    handleTokenExpiration();
+                }
+            } catch (error) {
+                console.error('Error refreshing token:', error);
+                handleTokenExpiration();
+            }
+        }
+
+        function handleTokenExpiration() {
+            // Clear tokens
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('jwtRefreshToken');
+            currentToken = null;
+            currentRefreshToken = null;
+
+            if (tokenExpirationTimer) {
+                clearTimeout(tokenExpirationTimer);
+            }
+
+            // Show expiration message
+            alert('Sua sessão expirou. Por favor, faça login novamente.');
+            
+            // Redirect to login page
+            window.location.href = '/api/login';
         }
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -335,10 +413,22 @@
                 if (response.ok) {
                     const data = await response.json();
                     currentToken = data.accessToken;
+                    currentRefreshToken = data.refreshToken;
+                    
+                    // Store tokens
+                    localStorage.setItem('jwtToken', data.accessToken);
+                    localStorage.setItem('jwtRefreshToken', data.refreshToken);
+                    
                     document.getElementById('tokenValue').textContent = data.accessToken;
                     document.getElementById('tokenDisplay').style.display = 'block';
                     document.getElementById('loginForm').style.display = 'none';
                     document.querySelector('.register-link:not(#backToLogin)').style.display = 'none';
+                    
+                    // Schedule token refresh (5 minutes = 300 seconds)
+                    if (data.expiresIn) {
+                        scheduleTokenExpiration(data.expiresIn);
+                        console.log('Token expires in', data.expiresIn, 'seconds');
+                    }
                 } else {
                     const error = await response.text();
                     errorDiv.textContent = error || 'Falha no login. Verifique suas credenciais.';
@@ -413,12 +503,18 @@
         // Check if user is already authenticated (has token in URL or localStorage)
         window.addEventListener('load', () => {
             const savedToken = localStorage.getItem('jwtToken');
+            const savedRefreshToken = localStorage.getItem('jwtRefreshToken');
+            
             if (savedToken) {
                 currentToken = savedToken;
+                currentRefreshToken = savedRefreshToken;
                 document.getElementById('tokenValue').textContent = savedToken;
                 document.getElementById('tokenDisplay').style.display = 'block';
                 document.getElementById('loginForm').style.display = 'none';
                 document.querySelector('.register-link:not(#backToLogin)').style.display = 'none';
+                
+                // Schedule token refresh (assuming 5 minutes expiration)
+                scheduleTokenExpiration(300);
             }
         });
 
@@ -431,6 +527,9 @@
                         if (data.accessToken) {
                             localStorage.setItem('jwtToken', data.accessToken);
                         }
+                        if (data.refreshToken) {
+                            localStorage.setItem('jwtRefreshToken', data.refreshToken);
+                        }
                     });
                 }
                 return response;
@@ -439,6 +538,11 @@
 
         function logout() {
             const token = currentToken || localStorage.getItem('jwtToken');
+            
+            // Clear expiration timer
+            if (tokenExpirationTimer) {
+                clearTimeout(tokenExpirationTimer);
+            }
             
             // Call logout endpoint with token
             fetch('/api/v1/auth/logout', {
@@ -450,7 +554,9 @@
             }).then(response => {
                 // Clear local storage and UI
                 localStorage.removeItem('jwtToken');
+                localStorage.removeItem('jwtRefreshToken');
                 currentToken = null;
+                currentRefreshToken = null;
                 
                 // Reset UI
                 document.getElementById('tokenDisplay').style.display = 'none';
@@ -467,7 +573,9 @@
                 console.error('Logout error:', error);
                 // Still clear local storage even if logout endpoint fails
                 localStorage.removeItem('jwtToken');
+                localStorage.removeItem('jwtRefreshToken');
                 currentToken = null;
+                currentRefreshToken = null;
                 alert('Desconectado (lado do cliente)');
                 
                 // Reset UI

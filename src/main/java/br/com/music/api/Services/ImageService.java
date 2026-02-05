@@ -3,15 +3,12 @@ package br.com.music.api.Services;
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.StatObjectArgs;
-import io.minio.errors.ErrorResponseException;
-import io.minio.messages.ErrorResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.UUID;
 
 @Service
 public class ImageService {
