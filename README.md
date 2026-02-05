@@ -69,7 +69,7 @@ Para detalhes completos sobre a implementação de JWT, consulte:
 - **[JWT_IMPLEMENTATION_SUMMARY.md](JWT_IMPLEMENTATION_SUMMARY.md)** - Resumo técnico da implementação com arquitetura e componentes utilizados
 
 ### Acesso Rápido
-- **Página de Login**: `http://localhost:8080/api/login` (username: `admin`, password: `admin123`)
+- **Página de Login**: `http://localhost:8080/api/login` (Clique em registre-se Já informe um usuário e senha e volte a tela de login)
 - **Swagger UI**: `http://localhost:8080/api/swagger-ui.html`
 - **MinIO**: `http://localhost:9000` (access key: `admin`, secret key: `admin123`)
 
