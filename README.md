@@ -128,3 +128,98 @@ docker compose -f src/main/resources/services/docker/docker-compose.yml up -d
 - As migrations ficam em `src/main/resources/db/changelog`.
 - O bucket e as credenciais do MinIO são configurados em `application.properties`.
 - O contexto base do servidor é `/api` (ver `application.properties`).
+
+---
+
+## Deploy em Produção (Docker)
+
+O projeto inclui arquivos para deploy completo usando Docker Compose com o JAR pré-compilado.
+
+### Arquivos de Deploy
+- **`app-music.jar`** - JAR executável da aplicação (89MB)
+- **`Dockerfile`** - Imagem Docker baseada em OpenJDK 21 slim
+- **`docker-compose.yml`** - Orquestração completa (PostgreSQL + Redis + MinIO + Music API)
+- **`deploy.sh`** - Script de gerenciamento automatizado
+
+### Comandos Rápidos
+
+```bash
+# Build do JAR + imagem Docker
+./deploy.sh build
+
+# Iniciar todos os serviços em produção
+./deploy.sh start
+
+# Ver logs da aplicação
+./deploy.sh logs
+
+# Status dos containers
+./deploy.sh status
+
+# Parar todos os serviços
+./deploy.sh stop
+
+# Reiniciar tudo
+./deploy.sh restart
+
+# Limpar containers e volumes
+./deploy.sh clean
+```
+
+### Deploy Manual (sem script)
+
+```bash
+# 1. Build do JAR (se ainda não existir)
+./mvnw clean package -DskipTests
+cp target/music-api-0.0.1-SNAPSHOT.jar app-music.jar
+
+# 2. Build da imagem Docker
+docker-compose build
+
+# 3. Subir stack completa
+docker-compose up -d
+
+# 4. Verificar logs
+docker-compose logs -f music-api
+```
+
+### Acessos Após Deploy
+
+- **API REST**: http://localhost:8080/api
+- **Swagger UI**: http://localhost:8080/api/swagger-ui.html
+- **Login**: http://localhost:8080/api/login
+- **MinIO Console**: http://localhost:9001 (admin/admin123)
+
+### Healthchecks
+
+Todos os serviços incluem healthchecks automáticos:
+- **PostgreSQL**: `pg_isready` a cada 10s
+- **Redis**: `redis-cli ping` a cada 10s
+- **MinIO**: curl no endpoint `/minio/health/live` a cada 10s
+
+A aplicação só inicia após todos os serviços estarem saudáveis.
+
+### Volumes Persistentes
+
+Os dados são mantidos em volumes Docker:
+- `postgres_data` - Banco de dados PostgreSQL
+- `minio_data` - Arquivos do MinIO (imagens, uploads)
+
+Para backup ou migração, exporte esses volumes antes de executar `./deploy.sh clean`.
+
+### Configuração de Ambiente
+
+O `docker-compose.yml` usa as seguintes variáveis de ambiente para a aplicação:
+
+```yaml
+SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/padawan_api
+SPRING_DATASOURCE_USERNAME: postgres
+SPRING_DATASOURCE_PASSWORD: admin
+SPRING_REDIS_HOST: redis
+SPRING_REDIS_PORT: 6379
+MINIO_URL: http://minio:9000
+MINIO_ACCESS_KEY: admin
+MINIO_SECRET_KEY: admin123
+```
+
+Para produção real, altere as senhas e credenciais diretamente no `docker-compose.yml`.
