@@ -231,3 +231,5 @@ Para produção real, altere as senhas e credenciais diretamente no `docker-comp
 - Importar a lista para tabela interna (CRUD FOI CRIADO) Não ficou claro a dependência das Regionais
 - Rate limit: até 10 requisições por minuto por usuário.
 - Atributo alterado → inativar antigo e criar novo registro.
+- Recuperação por links pré-assinados com expiração de 30 minutos.
+- WebSocket para notificar o front a cada novo álbum cadastrado.
