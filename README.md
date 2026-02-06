@@ -1,5 +1,36 @@
 # Music API - Guia de Dependências, Arquitetura e Padrões
 
+## 🐳 Deploy em Produção (NOVO!)
+
+Para deploy em produção com Docker:
+
+**Documentação Completa:**
+- **[DOCKER_SUMMARY.md](DOCKER_SUMMARY.md)** - Resumo executivo da análise e arquivos criados
+- **[PRODUCTION_GUIDE.md](PRODUCTION_GUIDE.md)** - Guia completo de deploy em produção (50+ páginas)
+
+**Quick Start:**
+```bash
+# 1. Configurar ambiente
+cp .env.production .env
+nano .env  # Editar com valores reais
+
+# 2. Deploy completo
+./deploy-production.sh deploy
+
+# 3. Verificar
+./deploy-production.sh status
+./deploy-production.sh health
+```
+
+**Arquivos Criados:**
+- ✅ [Dockerfile](Dockerfile) - Multi-stage build Ubuntu (~300MB)
+- ✅ [docker-compose.production.yml](docker-compose.production.yml) - Stack completo (PostgreSQL + Redis + MinIO + API)
+- ✅ [.env.production](.env.production) - Template de configuração
+- ✅ [deploy-production.sh](deploy-production.sh) - Script de automação
+- ✅ [.dockerignore](.dockerignore) - Otimização de build
+
+---
+
 ## Dependências Necessárias (instalação local)
 
 ### Essenciais
@@ -99,99 +130,28 @@ minio.bucket.name=meu-bucket
 
 ## Como Rodar (comandos)
 
-### Opção 1: Docker Compose (Recomendado) 🐳
-
-Execute toda a infraestrutura (PostgreSQL + Redis + MinIO + API) com um único comando:
-
-#### Usando o Script de Deploy (Mais Fácil)
-
-```bash
-# Deploy completo (build JAR + build Docker + start)
-./deploy.sh deploy
-
-# Ou individual:
-./deploy.sh build    # Build do JAR
-./deploy.sh start    # Iniciar serviços
-./deploy.sh logs     # Ver logs
-./deploy.sh stop     # Parar serviços
-./deploy.sh status   # Verificar status
-./deploy.sh clean    # Limpar tudo
-```
-
-#### Manualmente
-
-```bash
-# 1. Build da aplicação
-./mvnw clean package -DskipTests
-cp target/music-api-0.0.1-SNAPSHOT.jar music-app.jar
-
-# 2. Subir todos os serviços
-docker-compose up -d
-
-# 3. Acompanhar logs
-docker-compose logs -f music-api
-```
-
-**Acessos:**
-- API: http://localhost:8080/api
-- Swagger: http://localhost:8080/api/swagger-ui.html
-- Login: http://localhost:8080/api/login
-- MinIO Console: http://localhost:9001 (admin/admin123)
-
-📖 **Documentação completa:** [README_DOCKER.md](README_DOCKER.md)
-
-### Opção 2: Infraestrutura Docker + Aplicação Local
-
-Subir infraestrutura local (Docker):
+### Subir infraestrutura local (Docker)
 
 ```bash
 docker compose -f src/main/resources/services/docker/docker-compose.yml up -d
 ```
 
-Rodar a aplicação localmente:
+### Rodar a aplicação
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-### Opção 3: Somente com JAR
+### Build (sem testes)
 
 ```bash
-# Build
-./mvnw clean package -DskipTests
-
-# Executar (requer PostgreSQL, Redis e MinIO rodando)
-java -jar target/music-api-0.0.1-SNAPSHOT.jar
+./mvnw -DskipTests package
 ```
 
-## Build e Testes
-
-### Build do projeto
+### Testes
 
 ```bash
-# Build completo com testes
-./mvnw clean package
-
-# Build sem testes (mais rápido)
-./mvnw clean package -DskipTests
-```
-
-### Executar testes
-
-```bash
-# Todos os testes
 ./mvnw test
-
-# Testes específicos
-./mvnw test -Dtest=MinioStorageServiceTest
-./mvnw test -Dtest=ArtistaServiceTest
-```
-
-### Gerar music-app.jar
-
-```bash
-./mvnw clean package -DskipTests
-cp target/music-api-0.0.1-SNAPSHOT.jar music-app.jar
 ```
 
 ## Observações Importantes
